@@ -41,21 +41,30 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
-
   String _batteryLevel = 'Unknown battery level.';
 
-  Future<Null> _getBatteryLevel() async {
-    String batteryLevel;
-    batteryLevel = await bridge.getBatteryLevel();
-    setState(() {
-      _batteryLevel = batteryLevel;
+//
+//  Future<Null> _getBatteryLevel() async {
+//    String batteryLevel;
+//    batteryLevel = await bridge.getBatteryLevel();
+//    setState(() {
+//      _batteryLevel = batteryLevel;
+//    });
+//  }
+  @override
+  void initState() {
+    super.initState();
+    Future<String> future = bridge.getBatteryLevel();
+    future.then((value) {
+      setState(() {
+        _batteryLevel = value;
+      });
     });
   }
 
   void _incrementCounter() {
     setState(() {
       _counter++;
-      _getBatteryLevel();
       post();
       if (_counter > 5) {
         print("TTT: +$_counter");
@@ -83,7 +92,7 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text(
-              _batteryLevel,
+              "剩余电量" + _batteryLevel + "%",
             ),
             Text(
               '$_counter',

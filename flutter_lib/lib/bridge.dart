@@ -1,51 +1,61 @@
 import 'package:flutter/services.dart';
 
 class bridge {
-  static const _httpPlatform =
-      const MethodChannel("com.ym.framework.plugins/http");
-  static const _toastPlatform =
-      const MethodChannel("com.mrper.framework.plugins/toast");
-  static const platform = const MethodChannel('samples.flutter.io/battery');
-  static const _navigatPlatform =
-      const MethodChannel("com.ym.framework.plugins/navigate");
+  static const _bridgePlatform =
+      const MethodChannel("com.ym.framework.plugins/bridge");
+
+  static Future<String> dispenser(var dispenser) async {
+    try {
+      String method = dispenser['method'];
+      var params = dispenser['params'];
+      return await _bridgePlatform.invokeMethod(method, params);
+    } on PlatformException catch (e) {
+      return e.message;
+    }
+  }
 
   static void gotoVideoPage() {
-    _navigatPlatform.invokeMethod("video");
+    dispenser({
+      "method": "video",
+      "params": {"action": "navigate"}
+    });
   }
 
   static void showShortToast(String message) {
     message = message.replaceAll(" ", "");
-    _toastPlatform.invokeMethod("showShortToast", {"message": message});
+    dispenser({
+      "method": "showShortToast",
+      "params": {"action": "toast", "message": message}
+    });
   }
 
-  static void showLongToast(String message) =>
-      _toastPlatform.invokeMethod("showLongToast", {"message": message});
+  static void showLongToast(String message) {
+    message = message.replaceAll(" ", "");
+    dispenser({
+      "method": "showLongToast",
+      "params": {"action": "toast", "message": message}
+    });
+  }
 
-  static void showToast(String message, int duration) => _toastPlatform
-      .invokeMethod("showToast", {"message": message, "duration": duration});
+  static void showToast(String message, int duration) {
+    message = message.replaceAll(" ", "");
+    dispenser({
+      "method": "showToast",
+      "params": {"action": "toast", "message": message, "duration": duration}
+    });
+  }
 
-  static Future<String> httpRequest(var requestType, String message) async {
-    String result;
-    try {
-      if (requestType == 0) {
-        result = await _httpPlatform.invokeMethod("get", {"json": message});
-      } else if (requestType == 1) {
-        result = await _httpPlatform.invokeMethod("post", {"json": message});
-      }
-    } on PlatformException catch (e) {
-      result = "Failed to get result: '${e.message}'.";
-    }
-    return result;
+  static Future<String> httpRequest(var requestType, String url) async {
+    return dispenser({
+      "method": "get",
+      "params": {"action": "http", "message": url}
+    });
   }
 
   static Future<String> getBatteryLevel() async {
-    String batteryLevel;
-    try {
-      final int result = await platform.invokeMethod('getBatteryLevel');
-      batteryLevel = 'Battery level at $result % .';
-    } on PlatformException catch (e) {
-      batteryLevel = "Failed to get battery level: '${e.message}'.";
-    }
-    return batteryLevel;
+    return dispenser({
+      "method": "getBatteryLevel",
+      "params": {"action": "battery", "message": "msg"}
+    });
   }
 }

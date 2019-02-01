@@ -6,11 +6,14 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.BatteryManager;
 import android.os.Build;
+import android.text.TextUtils;
 import android.widget.Toast;
 
 import com.ym.flutter.flutterhost.VideoActivity;
 
 import org.json.JSONObject;
+
+import java.util.Objects;
 
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
@@ -48,8 +51,8 @@ public class PluginDelegate {
 
     private void getBattery(Context context, MethodCall methodCall, MethodChannel.Result result) {
         if (methodCall.method.equals("getBatteryLevel")) {
-            int batteryLevel = getBatteryLevel(context);
-            if (batteryLevel != -1) {
+            String batteryLevel = getBatteryLevel(context);
+            if (!TextUtils.equals(batteryLevel, "-1")) {
                 result.success(batteryLevel);
             } else {
                 result.error("UNAVAILABLE", "Battery level not available.", null);
@@ -95,7 +98,7 @@ public class PluginDelegate {
         }
     }
 
-    private int getBatteryLevel(Context context) {
+    private String getBatteryLevel(Context context) {
         int batteryLevel = -1;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             BatteryManager batteryManager = (BatteryManager) context.getSystemService(Context.BATTERY_SERVICE);
@@ -110,6 +113,6 @@ public class PluginDelegate {
                         intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
             }
         }
-        return batteryLevel;
+        return String.valueOf(batteryLevel);
     }
 }
