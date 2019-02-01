@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
-import 'package:flutter/services.dart';
-import './NFBridge.dart';
-
+import './bridge.dart';
 
 void main() => runApp(_widgetForRoute(window.defaultRouteName));
 
@@ -26,14 +24,6 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or press Run > Flutter Hot Reload in a Flutter IDE). Notice that the
-        // counter didn't reset back to zero; the application is not restarted.
         primarySwatch: Colors.blue,
       ),
       home: MyHomePage(title: 'Flutter Demo Home Page'),
@@ -51,19 +41,12 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
-  static const platform = const MethodChannel('samples.flutter.io/battery');
 
   String _batteryLevel = 'Unknown battery level.';
 
   Future<Null> _getBatteryLevel() async {
     String batteryLevel;
-    try {
-      final int result = await platform.invokeMethod('getBatteryLevel');
-      batteryLevel = 'Battery level at $result % .';
-    } on PlatformException catch (e) {
-      batteryLevel = "Failed to get battery level: '${e.message}'.";
-    }
-
+    batteryLevel = await bridge.getBatteryLevel();
     setState(() {
       _batteryLevel = batteryLevel;
     });
@@ -74,14 +57,18 @@ class _MyHomePageState extends State<MyHomePage> {
       _counter++;
       _getBatteryLevel();
       post();
+      if (_counter > 5) {
+        print("TTT: +$_counter");
+        bridge.gotoVideoPage();
+      }
     });
   }
 
   Future post() async {
-    String result = await NFBridge.httpRequest(1, "发送一个post请求");
+    String result = await bridge.httpRequest(1, "发送一个post请求");
     setState(() {
       print("TTT " + result);
-      NFBridge.showShortToast(result);
+      bridge.showShortToast(result);
     });
   }
 
